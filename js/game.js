@@ -19,9 +19,8 @@ var player = {
 	"size": 1
 };
 var textures = {};
-var screens = {};
-var currScreen;
-
+var worlds = {};
+var currWorld = 0;
 
 var direction = [0,0,0,0];
 var prevLoc = [];
@@ -35,9 +34,10 @@ gameport.addEventListener('mousedown', mousedownEventHandler);
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 PIXI.loader
-	.add("map_json", "assets/map.json")
-	.add("room1_json", "assets/room1.json")
-	.add("tiles", "assets/tiles.png")
+	.add("world1_json", "assets/world1.json")
+	.add("w1_tiles", "assets/w1-tiles.png")
+	.add("world2_json", "assets/world2.json")
+	.add("w2_tiles", "assets/w2-tiles.png")
 	.add("assets/spritesheet.json")
 	.load(ready);
 
@@ -51,71 +51,54 @@ function ready() {
 	for (var i = 1; i < 3; i++) {
 		textures.player.test.push(PIXI.Texture.fromFrame("test" + i + ".png"));
 	}
-	// Load all of the screens
+	// Load all of the worlds
 	var tileUtil = new TileUtilities(PIXI);
-	screens["main"] = {"world": tileUtil.makeTiledWorld("map_json", "assets/tiles.png")};
-	screens["room1"] = {"world": tileUtil.makeTiledWorld("room1_json", "assets/tiles.png")};
+	worlds[0] = {"world": tileUtil.makeTiledWorld("world1_json", "assets/w1-tiles.png")};
+	worlds[1] = {"world": tileUtil.makeTiledWorld("world2_json", "assets/w2-tiles.png")};
 
 	// Initialize player based on tileset location
 	player.sprite = new PIXI.extras.MovieClip(textures.player.default);
 	player.sprite.anchor.x = 0.5;
 	player.sprite.anchor.y = 0.5;
+	player.sprite.x = worlds[currWorld].world.getObject("player").x;
+	player.sprite.y = worlds[currWorld].world.getObject("player").y;
 	
-	changeScreen("main");
+	toggleWorld();
 
 	animate();
 }
 
-function changeScreen(screenName) {
+function toggleWorld() {
 
-		if (currScreen) {
-			currScreen["lastX"] = player.sprite.x;
-			currScreen["lastY"] = player.sprite.y;
+		if (prevLoc[0]) {
+			currWorld = 1 - currWorld;
+			player.sprite.x = prevLoc[0];
+			player.sprite.y = prevLoc[1];
 		}
 
-		currScreen = screens[screenName];
-		currScreen.world.getObject("entities").addChild(player.sprite);
-
-		if (currScreen.lastX) {
-			player.sprite.x = currScreen.lastX;
-			player.sprite.y = currScreen.lastY;
-		}
-		else {
-			//	THIS SHOULD BE ADJUSTED ONCE I ADD ALL THE SPAWNS
-			try {
-				start = currScreen.world.getObject("player");
-				player.sprite.x = start.x;
-				player.sprite.y = start.y
-			}
-			catch(err) {
-				player.sprite.x = player.sprite.width/2;
-				player.sprite.y = player.sprite.width/2;
-			}
-		}
-		
-		
+		worlds[currWorld].world.getObject("entities").addChild(player.sprite);
 		
 		if (stage.children[0]) stage.removeChildAt(0);
-		stage.addChildAt(currScreen.world, 0);
+		stage.addChildAt(worlds[currWorld].world, 0);
 		
 }
 
 // Event Handlers
 function keydownEventHandler(e) {
 	// Movement key catch
-	if (e.keyCode === 68) {
+	if (e.keyCode === 68 || e.keyCode === 39) {
 		e.preventDefault();
 		direction[0] = 1;
 	}
-	if (e.keyCode === 87) {
+	if (e.keyCode === 87 || e.keyCode === 38) {
 		e.preventDefault();
 		direction[1] = 1;
 	}
-	if (e.keyCode === 65) {
+	if (e.keyCode === 65 || e.keyCode === 37) {
 		e.preventDefault();
 		direction[2] = 1;
 	}
-	if (e.keyCode === 83) {
+	if (e.keyCode === 83 || e.keyCode === 40) {
 		e.preventDefault();
 		direction[3] = 1;
 	}
@@ -123,20 +106,20 @@ function keydownEventHandler(e) {
 	if(e.keyCode === 32) {
 		e.preventDefault();
 		player.sprite.textures = textures.player.test;
-		changeScreen("room1");
+		toggleWorld();
 	}
 	if(e.keyCode === 16) {
 		e.preventDefault();
-		changeScreen("main");
+		toggleWorld();
 	}
 }
 
 function keyupEventHandler(e) {
 	// Movement key catch
-	if (e.keyCode === 68) direction[0] = 0;
-	if (e.keyCode === 87) direction[1] = 0;
-	if (e.keyCode === 65) direction[2] = 0;
-	if (e.keyCode === 83) direction[3] = 0;
+	if (e.keyCode === 68 || e.keyCode === 39) direction[0] = 0;
+	if (e.keyCode === 87 || e.keyCode === 38) direction[1] = 0;
+	if (e.keyCode === 65 || e.keyCode === 37) direction[2] = 0;
+	if (e.keyCode === 83 || e.keyCode === 40) direction[3] = 0;
 
 	if(e.keyCode === 32) {
 		player.size = 1;
@@ -149,20 +132,20 @@ function mousedownEventHandler(e) {
 
 function checkCollision() {
 	// Bounding boxes of the world
-	if (player.sprite.x > currScreen.world.worldWidth - player.sprite.width/2) player.sprite.x = currScreen.world.worldWidth - player.sprite.width/2;
+	if (player.sprite.x > worlds[currWorld].world.worldWidth - player.sprite.width/2) player.sprite.x = worlds[currWorld].world.worldWidth - player.sprite.width/2;
 	if (player.sprite.y < player.sprite.height/2) player.sprite.y = player.sprite.height/2;
 	if (player.sprite.x < player.sprite.width/2) player.sprite.x = player.sprite.width/2;
-	if (player.sprite.y > currScreen.world.worldHeight - player.sprite.height/2) player.sprite.y = currScreen.world.worldHeight - player.sprite.height/2;
+	if (player.sprite.y > worlds[currWorld].world.worldHeight - player.sprite.height/2) player.sprite.y = worlds[currWorld].world.worldHeight - player.sprite.height/2;
 
 	// Collision boxes by tile sheet
-	objects = currScreen.world.getObject("collision").objects;
+	objects = worlds[currWorld].world.getObject("collision").objects;
 	for (var i = 0; i < objects.length; i++) {
 		obj = objects[i];
 		p = player.sprite;
 
 		if (p.x - p.width/2 < obj.x + obj.width && p.x + p.width/2 > obj.x && p.y - p.height/2 < obj.y + obj.height && p.y + p.height/2 > obj.y) {
+			if (obj.name === "portal") toggleWorld();
 			player.sprite.x = prevLoc[0], player.sprite.y = prevLoc[1];
-			console.log()
 		}
 	}
 }
@@ -194,9 +177,9 @@ function updatePlayer() {
 function updateCamera() {
 	stage.x = -player.sprite.x*GAME_SCALE + GAME_WIDTH/2;
 	stage.y = -player.sprite.y*GAME_SCALE + GAME_HEIGHT/2;
-	if (currScreen.world.worldWidth * GAME_SCALE >= GAME_WIDTH && currScreen.world.worldHeight * GAME_SCALE >= GAME_HEIGHT) {
-		stage.x = -Math.max(0, Math.min(currScreen.world.worldWidth*GAME_SCALE - GAME_WIDTH, -stage.x));
-		stage.y = -Math.max(0, Math.min(currScreen.world.worldHeight*GAME_SCALE - GAME_HEIGHT, -stage.y));
+	if (worlds[currWorld].world.worldWidth * GAME_SCALE >= GAME_WIDTH && worlds[currWorld].world.worldHeight * GAME_SCALE >= GAME_HEIGHT) {
+		stage.x = -Math.max(0, Math.min(worlds[currWorld].world.worldWidth*GAME_SCALE - GAME_WIDTH, -stage.x));
+		stage.y = -Math.max(0, Math.min(worlds[currWorld].world.worldHeight*GAME_SCALE - GAME_HEIGHT, -stage.y));
 	}
 }
 
