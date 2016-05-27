@@ -28,7 +28,7 @@
             </struct>
         </array>
         <key>allowRotation</key>
-        <true/>
+        <false/>
         <key>shapeDebug</key>
         <false/>
         <key>dpi</key>
@@ -70,7 +70,7 @@
             </struct>
         </struct>
         <key>shapePadding</key>
-        <uint>1</uint>
+        <uint>2</uint>
         <key>jpgQuality</key>
         <uint>80</uint>
         <key>pngOptimizationLevel</key>
@@ -82,7 +82,7 @@
         <key>textureFormat</key>
         <enum type="SettingsBase::TextureFormat">png</enum>
         <key>borderPadding</key>
-        <uint>1</uint>
+        <uint>2</uint>
         <key>maxTextureSize</key>
         <QSize>
             <key>width</key>
@@ -193,8 +193,12 @@
             <key type="filename">player3.png</key>
             <key type="filename">player4.png</key>
             <key type="filename">player5.png</key>
-            <key type="filename">test1.png</key>
-            <key type="filename">test2.png</key>
+            <key type="filename">slime1.png</key>
+            <key type="filename">slime2.png</key>
+            <key type="filename">slime3.png</key>
+            <key type="filename">slime4.png</key>
+            <key type="filename">slime5.png</key>
+            <key type="filename">slime6.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -207,8 +211,12 @@
             <filename>player3.png</filename>
             <filename>player4.png</filename>
             <filename>player5.png</filename>
-            <filename>test1.png</filename>
-            <filename>test2.png</filename>
+            <filename>slime4.png</filename>
+            <filename>slime5.png</filename>
+            <filename>slime6.png</filename>
+            <filename>slime1.png</filename>
+            <filename>slime2.png</filename>
+            <filename>slime3.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
